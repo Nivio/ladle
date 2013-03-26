@@ -5,7 +5,7 @@ load File.expand_path("../tasks/remove_task.rake", __FILE__)
 # tasks that require multiple platforms at once.
 
 def package_variants
-  %w(1.8.7 jruby)
+  %w(1.9.3 jruby)
 end
 
 begin
