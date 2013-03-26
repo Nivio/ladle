@@ -18,8 +18,14 @@ describe Ladle, "::Server" do
 
   def should_not_be_running
     s = nil
+    if RUBY_PLATFORM =~ /mswin|mingw|cygwin/
+      message = 'No connection could be made'
+    else
+      message = 'Connection refused'
+    end
+
     lambda { s = TCPSocket.new('localhost', @server.port) }.
-      should raise_error(/Connection refused/)
+      should raise_error(/#{message}/)
     s.close if s
   end
 
@@ -125,7 +131,7 @@ describe Ladle, "::Server" do
 
     describe ":tmpdir" do
       before do
-        preserve_and_wipe_env("TMPDIR", "TEMPDIR")
+        preserve_and_wipe_env("TMPDIR", "TEMPDIR", "TEMP")
       end
 
       after do
@@ -142,9 +148,15 @@ describe Ladle, "::Server" do
         Ladle::Server.new.tmpdir.should == tmpdir('baz')
       end
 
+      it "defaults to TEMP if set" do
+        ENV["TEMP"] = tmpdir('baz')
+        Ladle::Server.new.tmpdir.should == tmpdir('baz')
+      end
+
       it "prefers the explicitly provided value" do
         ENV["TMPDIR"] = tmpdir('quux')
         ENV["TEMPDIR"] = tmpdir('bar')
+        ENV["TEMP"] = tmpdir('baz')
         Ladle::Server.new(:tmpdir => tmpdir('zap')).tmpdir.
           should == tmpdir('zap')
       end

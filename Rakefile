@@ -5,7 +5,6 @@ require 'rspec/core/rake_task'
 require 'yard'
 require 'yard/rake/yardoc_task'
 load File.expand_path("../tasks/remove_task.rake", __FILE__)
-require 'ci/reporter/rake/rspec'
 
 RSpec::Core::RakeTask.new do |t|
   t.pattern = "spec/**/*_spec.rb"

@@ -88,7 +88,7 @@ module Ladle
       @quiet = opts[:quiet]
       @verbose = opts[:verbose]
       @timeout = opts[:timeout] || 15
-      @tmpdir = opts[:tmpdir] || ENV['TMPDIR'] || ENV['TEMPDIR']
+      @tmpdir = opts[:tmpdir] || ENV['TMPDIR'] || ENV['TEMPDIR'] || ENV['TEMP']
       @java_bin = opts[:java_bin] ||
         (ENV['JAVA_HOME'] ? File.join(ENV['JAVA_HOME'], "bin", "java") : "java")
       @custom_schemas = opts[:custom_schemas] ? [*opts[:custom_schemas]] : []
@@ -264,7 +264,15 @@ module Ladle
         [File.expand_path("../java", __FILE__)] +
         # User-specified classpath
         additional_classpath
-      ).join(':')
+      ).join(classpath_separator)
+    end
+
+    def classpath_separator
+      if RUBY_PLATFORM =~ /mswin|mingw|cygwin/
+        ';'
+      else
+        ':'
+      end
     end
 
     ##

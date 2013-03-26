@@ -1,6 +1,5 @@
 require 'ladle'
-
-require 'open4'
+require 'open3'
 
 module Ladle
   ##
@@ -17,7 +16,9 @@ module Ladle
     #
     # @return [[IO, IO, IO]] stdin, stdout, and stderr for the running process.
     def popen
-      @pid, i, o, e = Open4.open4(@command_and_args.join(' '))
+      i, o, e, wait_thr = Open3.popen3(@command_and_args.join(' '))
+      @pid = wait_thr.pid
+      @wait_thread = wait_thr
       [i, o, e]
     end
 
@@ -26,7 +27,7 @@ module Ladle
     #
     # @return [Fixnum] the return status of the process.
     def wait
-      Process.waitpid2(@pid)[1]
+      @wait_thread.value
     end
 
     ##
@@ -34,7 +35,16 @@ module Ladle
     #
     # @return [void]
     def stop_gracefully
-      Process.kill 15, pid
+      if RUBY_PLATFORM =~ /mswin|mingw|cygwin/
+        signal = 9
+      else
+        signal = 15
+      end
+
+      begin
+        Process.kill signal, pid
+      rescue Errno::ESRCH
+      end
     end
 
     ##
