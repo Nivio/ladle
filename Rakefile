@@ -17,13 +17,21 @@ task :clean do
   Dir['**/*.class'].each { |fn| rm_rf fn }
 end
 
+def classpath_separator
+  if RUBY_PLATFORM =~ /mswin|mingw|cygwin/
+    ';'
+  else
+    ':'
+  end
+end
+
 desc "Compile the java adapter code"
 task :compile do
   puts "Compiling java support code"
   jars = Dir['lib/ladle/apacheds/*.jar'].collect { |fn| File.expand_path(fn) }
   javac = ENV['JAVA_HOME'] ? ENV['JAVA_HOME'] + "/bin/javac" : "javac"
   one_cmd(
-    javac, '-cp', "'#{jars.join(':')}'",
+    javac, '-cp', "'#{jars.join(classpath_separator)}'",
     ('-verbose' if Rake.application.options.trace),
     'lib/ladle/java/net/detailedbalance/ladle/*.java')
 end
